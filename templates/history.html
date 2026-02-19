@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>History - MarketAI Pro</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+  <div class="container">
+    <div class="topbar">
+      <h2>History</h2>
+      <div>
+        <a href="/dashboard">Back</a> |
+        <button class="btn2" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <select id="module">
+      <option value="">All</option>
+      <option value="campaign">Campaign</option>
+      <option value="pitch">Pitch</option>
+      <option value="lead">Lead</option>
+    </select>
+    <button class="btn" onclick="loadHistory()">Load</button>
+
+    <div id="list"></div>
+  </div>
+
+  <script src="/static/js/auth.js"></script>
+  <script>
+    if (!getToken()) window.location.href = "/";
+
+    async function loadHistory() {
+      const m = module.value;
+      const url = m ? `/api/history?module=${m}` : "/api/history";
+      const res = await fetch(url, { headers: { "Authorization": "Bearer " + getToken() } });
+      const data = await res.json();
+
+      list.innerHTML = "";
+      data.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+      <b>ID:</b> ${item.id} | <b>Module:</b> ${item.module} <br/>
+      <span class="small">${item.created_at}</span>
+      <pre>${item.output.result}</pre>
+      <button class="btn2" onclick="downloadPDF(${item.id})">Download PDF</button>
+    `;
+        list.appendChild(div);
+      });
+    }
+    loadHistory();
+
+    async function downloadPDF(id) {
+      const res = await fetch(`/api/export/pdf/${id}`, {
+        headers: { "Authorization": "Bearer " + getToken() }
+      });
+      if (!res.ok) { alert("Failed to download PDF"); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `marketai_export_${id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Pitch - MarketAI Pro</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+  <div class="container">
+    <div class="topbar">
+      <h2>Sales Pitch Generator</h2>
+      <div>
+        <a href="/dashboard">Back</a> |
+        <a href="/history">History</a> |
+        <button class="btn2" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <input id="company" placeholder="Your Company" />
+        <input id="persona" placeholder="Customer Persona" />
+        <input id="pain" placeholder="Pain Point" />
+        <input id="product" placeholder="Product/Service" />
+        <select id="tone">
+          <option>Professional</option>
+          <option>Friendly</option>
+          <option>Bold</option>
+          <option>Minimal</option>
+        </select>
+        <select id="length">
+          <option>Short</option>
+          <option>Medium</option>
+          <option>Long</option>
+        </select>
+        <button class="btn" onclick="generate()">Generate</button>
+        <p class="small" id="msg"></p>
+      </div>
+
+      <div>
+        <h3>Output</h3>
+        <pre id="out"></pre>
+        <button class="btn2" id="pdfBtn" style="display:none;" onclick="downloadPDF()">Download PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/auth.js"></script>
+  <script>
+    if (!getToken()) window.location.href = "/";
+    let lastLogId = null;
+
+    async function generate() {
+      const payload = {
+        company: company.value, persona: persona.value, pain: pain.value,
+        product: product.value, tone: tone.value, length: length.value
+      };
+
+      const res = await fetch("/api/pitch/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + getToken()
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (!res.ok) { msg.innerText = data.message || "Error"; return; }
+
+      lastLogId = data.log_id;
+      out.innerText = data.result;
+      pdfBtn.style.display = "inline-block";
+      msg.innerText = "Saved in history ✔";
+    }
+
+    async function downloadPDF() {
+      if (!lastLogId) return;
+      const res = await fetch(`/api/export/pdf/${lastLogId}`, {
+        headers: { "Authorization": "Bearer " + getToken() }
+      });
+      if (!res.ok) { alert("Failed to download PDF"); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `marketai_pitch_${lastLogId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+
+</html>

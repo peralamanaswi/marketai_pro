@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard - MarketAI Pro</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="container">
+  <div class="topbar">
+    <div>
+      <h2>Dashboard</h2>
+      <p class="small" id="who"></p>
+    </div>
+    <div>
+      <button class="btn2" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Modules</h3>
+    <p><a href="/campaign">📣 Campaign Generator</a></p>
+    <p><a href="/pitch">💬 Sales Pitch Generator</a></p>
+    <p><a href="/lead">🎯 Lead Scoring</a></p>
+    <p><a href="/history">🕘 History & Export</a></p>
+    <p><a href="/admin">📊 Admin Analytics</a> <span class="small">(ADMIN only)</span></p>
+  </div>
+</div>
+
+<script src="/static/js/auth.js"></script>
+<script>
+const name = localStorage.getItem("name");
+const role = localStorage.getItem("role");
+if(!getToken()) window.location.href = "/";
+document.getElementById("who").innerText = `Logged in as ${name} (${role})`;
+</script>
+</body>
+</html>

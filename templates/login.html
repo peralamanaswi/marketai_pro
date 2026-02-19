@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login - MarketAI Pro</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>MarketAI Suite Pro - Login</h2>
+    <p class="small">Use your email and password.</p>
+
+    <input id="email" placeholder="Email" />
+    <input id="password" type="password" placeholder="Password" />
+    <button class="btn" onclick="login()">Login</button>
+    <p>New user? <a href="/register">Register</a></p>
+
+    <p id="msg" class="small"></p>
+  </div>
+
+<script src="/static/js/auth.js"></script>
+<script>
+async function login(){
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  const res = await fetch("/api/auth/login", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({email,password})
+  });
+
+  const data = await res.json();
+  if(!res.ok){
+    document.getElementById("msg").innerText = data.message || "Login failed";
+    return;
+  }
+  setAuth(data);
+  window.location.href = "/dashboard";
+}
+</script>
+</body>
+</html>

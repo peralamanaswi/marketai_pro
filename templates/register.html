@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Register - MarketAI Pro</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Create Account</h2>
+
+    <input id="name" placeholder="Name" />
+    <input id="email" placeholder="Email" />
+    <input id="password" type="password" placeholder="Password" />
+    <button class="btn" onclick="register()">Register</button>
+    <p>Already have account? <a href="/">Login</a></p>
+
+    <p id="msg" class="small"></p>
+  </div>
+
+<script>
+async function register(){
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  const res = await fetch("/api/auth/register", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({name,email,password})
+  });
+
+  const data = await res.json();
+  document.getElementById("msg").innerText = res.ok
+    ? ("Registered! Role: " + data.role + " → Login now")
+    : (data.message || "Failed");
+}
+</script>
+</body>
+</html>

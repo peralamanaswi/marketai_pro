@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Lead Scoring - MarketAI Pro</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+  <div class="container">
+    <div class="topbar">
+      <h2>Lead Scoring</h2>
+      <div>
+        <a href="/dashboard">Back</a> |
+        <a href="/history">History</a> |
+        <button class="btn2" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <input id="name" placeholder="Lead Name" />
+        <input id="industry" placeholder="Industry" />
+        <select id="budget">
+          <option>Low</option>
+          <option>Medium</option>
+          <option>High</option>
+        </select>
+        <select id="need">
+          <option>Low</option>
+          <option>Medium</option>
+          <option>High</option>
+        </select>
+        <select id="urgency">
+          <option>Low</option>
+          <option>Medium</option>
+          <option>High</option>
+        </select>
+        <select id="authority">
+          <option>Low</option>
+          <option>Medium</option>
+          <option>High</option>
+        </select>
+
+        <button class="btn" onclick="score()">Score Lead</button>
+        <p class="small" id="msg"></p>
+      </div>
+
+      <div>
+        <h3>Output</h3>
+        <pre id="out"></pre>
+        <button class="btn2" id="pdfBtn" style="display:none;" onclick="downloadPDF()">Download PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/auth.js"></script>
+  <script>
+    if (!getToken()) window.location.href = "/";
+    let lastLogId = null;
+
+    async function score() {
+      const payload = {
+        name: name.value, industry: industry.value,
+        budget: budget.value, need: need.value,
+        urgency: urgency.value, authority: authority.value
+      };
+
+      const res = await fetch("/api/leads/score", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + getToken()
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (!res.ok) { msg.innerText = data.message || "Error"; return; }
+
+      lastLogId = data.log_id;
+      out.innerText = data.result;
+      pdfBtn.style.display = "inline-block";
+      msg.innerText = "Saved in history ✔";
+    }
+
+    async function downloadPDF() {
+      if (!lastLogId) return;
+      const res = await fetch(`/api/export/pdf/${lastLogId}`, {
+        headers: { "Authorization": "Bearer " + getToken() }
+      });
+      if (!res.ok) { alert("Failed to download PDF"); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `marketai_lead_${lastLogId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+
+</html>

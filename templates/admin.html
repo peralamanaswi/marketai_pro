@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin - MarketAI Pro</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="container">
+  <div class="topbar">
+    <h2>Admin Analytics</h2>
+    <div>
+      <a href="/dashboard">Back</a> |
+      <button class="btn2" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <button class="btn" onclick="load()">Load Analytics</button>
+  <div class="card" id="box"></div>
+  <p class="small" id="msg"></p>
+</div>
+
+<script src="/static/js/auth.js"></script>
+<script>
+if(!getToken()) window.location.href="/";
+
+async function load(){
+  const res = await fetch("/api/admin/analytics", {
+    headers:{ "Authorization":"Bearer " + getToken() }
+  });
+  const data = await res.json();
+  if(!res.ok){
+    msg.innerText = data.message || "Error";
+    return;
+  }
+  box.innerHTML = `
+    <p><b>Total Users:</b> ${data.total_users}</p>
+    <p><b>Total Requests:</b> ${data.total_requests}</p>
+    <p><b>Campaign:</b> ${data.by_module.campaign}</p>
+    <p><b>Pitch:</b> ${data.by_module.pitch}</p>
+    <p><b>Lead:</b> ${data.by_module.lead}</p>
+  `;
+}
+</script>
+</body>
+</html>
